@@ -1,4 +1,4 @@
-.MyApp = {};
+MyApp = {};
 MyApp.spreadsheetData = [];
 MyApp.keywords = [];
 MyApp.headerData = [
