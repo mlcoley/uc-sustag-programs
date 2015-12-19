@@ -2,17 +2,17 @@
 MyApp.spreadsheetData = [];
 MyApp.keywords = [];
 MyApp.headerData = [
-    { "sTitle": "Name" }, { "sTitle": "Organization" }, { "sTitle": "Projects" }, { "sTitle": "Contact" }, { "sTitle": "City" }, { "sTitle": "region" }, { "sTitle": "organizations" }, { "sTitle": "researchareas" }
+    { "sTitle": "Name" }, { "sTitle": "Campus" }, { "sTitle": "Description" }, { "sTitle": "Website" }, { "sTitle": "Contacts" }, { "sTitle": "Tags" }, { "sTitle": "YearEstablished" }
 ];
-MyApp.filterIndexes = { "organizations": 6, "regions": 5, "researcharea" : 7 };
-MyApp.Organizations = [], MyApp.Regions = [], MyApp.ResearchAreas = [];
+MyApp.filterIndexes = { "campuses": 6, "activities": 5, "topicareas" : 7 };
+MyApp.Campuses = [], MyApp.Activities = [], MyApp.TopicAreas = [];
 
 String.prototype.trunc = function (n) {
     return this.substr(0, n - 1) + (this.length > n ? '&hellip;' : '');
 };
 
 $(function () {
-    var url = "https://spreadsheets.google.com/feeds/list/0AhTxmYCYi3fpdGRrelZaT2F0ajBmalJzTlEzQU96dUE/1/public/values?alt=json-in-script&callback=?";
+    var url = "https://docs.google.com/spreadsheets/d/1Anucdpxh21HMYy5SIw3E5EKc8M3RnUAT5NEGk25QFpk/pubhtml";
     $.getJSON(url, {}, function (data) {
         $.each(data.feed.entry, function (key, val) {
             var name = val.gsx$name.$t;
