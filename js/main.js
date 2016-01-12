@@ -28,13 +28,13 @@ $(function () {
             var researchareas = val.gsx$researchareas.$t;
 
             // var allResearchInfo = val.gsx$gsx:positiontitle.$t + '<br />' + val.gsx$telephone.$t + '<br />' + val.gsx$researchareas.$t;
-            
+
             MyApp.spreadsheetData.push(
                 [
-                    GenerateResearcherColumn(val), 
-                    dept, 
-                    GenerateProjectColumn(val), 
-                    contact, city, 
+                    GenerateResearcherColumn(val),
+                    dept,
+                    GenerateProjectColumn(val),
+                    contact, city,
                     region, orgtype, researchareas
                 ]);
 
@@ -55,7 +55,7 @@ $(function () {
             //Add the keywords, which are semi-colon separated. First trim them and then replace the CRLF, then split.
             $.each(researchareas.trim().replace(/^[\r\n]+|\.|[\r\n]+$/g, "").split(';'), function (key, val) {
                 val = val.trim(); //need to trim the semi-colon separated values after split
-                
+
                 if ($.inArray(val, MyApp.ResearchAreas) === -1 && val.length !== 0) {
                     MyApp.ResearchAreas.push(val);
                 }
@@ -100,7 +100,7 @@ function hideUnavailableOrganizations(){
 
 
 function configurePopups(){
-    $("#spreadsheet").popover({ 
+    $("#spreadsheet").popover({
         selector: '.researcher-popover, .project-popover',
         trigger: 'hover'
     });
@@ -110,21 +110,21 @@ function configurePopups(){
 
 function addFilters(){
     var $organizations = $("#organizations");
-    
+
     $.each(MyApp.Organizations, function (key, val) {
         $organizations.append('<li><label><input type="checkbox" name="' + val + '"> ' + val + '</label></li>');
     });
 
 
     var $region = $("#regions");
-    
+
     $.each(MyApp.Regions, function (key, val) {
         $region.append('<li><label><input type="checkbox" name="' + val + '"> ' + val + '</label></li>');
     });
 
 
     var $researcharea = $("#researcharea");
-    
+
     $.each(MyApp.ResearchAreas, function (key, val) {
         $researcharea.append('<li><label><input type="checkbox" name="' + val + '"> ' + val + '</label></li>');
     });
@@ -142,7 +142,7 @@ function addFilters(){
                     filterRegex += "|";
                 }
 
-                filterRegex += val.name; //Use the hat and dollar to require an exact match                
+                filterRegex += val.name; //Use the hat and dollar to require an exact match
             }
         });
 
@@ -165,7 +165,7 @@ function addFilters(){
 function GenerateResearcherColumn(val /* entry value from spreadsheet */){
     var name = val.gsx$name.$t;
     var title = val.gsx$positiontitle.$t;
-        
+
     //var website = "<a target='_blank' href='" + val.gsx$website.$t + "'>" + val.gsx$website.$t + "</a>";
     //var email = "<a href='mailto:" + val["gsx$e-mail"].$t + "'>" + val["gsx$e-mail"].$t + "</a>";
     // var allResearchInfo = "Research areas: " + val.gsx$researchareas.$t;
@@ -173,7 +173,7 @@ function GenerateResearcherColumn(val /* entry value from spreadsheet */){
 
     var content = allResearchInfo; //could expand content later
     var researcher = "<a href='#' class='researcher-popover' data-toggle='popover' data-content='" + allResearchInfo + "' data-original-title='" + name + "'>" + name + "</a><br /><span class='discreet'>" + title + "</span>";
-        
+
     return researcher;
 }
 
@@ -191,11 +191,11 @@ function GenerateProjectColumn(val /* entry value from spreadsheet */){
     var project3 = "<a href='#' class='project-popover' data-toggle='popover' data-content='" + project3details + "' data-original-title='" + val.gsx$project3title.$t + "'>" + project3title + "</a>";
 
     var projects = project1 + (val.gsx$project2title.$t ? project2 : '') + (val.gsx$project3title.$t ? project3 : '');
-        
+
     var allResearchInfo = val.gsx$researchareas.$t;
 
     // var researcher = "<a href='#' class='researcher-popover' data-toggle='popover' data-content='" + allResearchInfo + "' data-original-title='" + name + "'>" + name + "</a><br /><span class='discreet'>" + title + "</span>";
-        
+
     return projects;
 }
 
@@ -204,7 +204,7 @@ function GenerateProjectColumn(val /* entry value from spreadsheet */){
 function displayCurrentFilters() {
     var $filterAlert = $("#filters");
     //var regionFilter = $("#regions"); // Wrong selector..?
-    
+
     var filters = "";
 
     /*
