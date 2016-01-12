@@ -12,7 +12,7 @@ String.prototype.trunc = function (n) {
 };
 
 $(function () {
-    var url = "https://spreadsheets.google.com/feeds/list/0AhTxmYCYi3fpdGRrelZaT2F0ajBmalJzTlEzQU96dUE/1/public/values?alt=json-in-script&callback=?";
+    var url = "https://docs.google.com/spreadsheets/d/1udtGOOPV7OMqrl2yQithu5hIZCci3LyLzXhVRDvFlAc/pubhtml";
     $.getJSON(url, {}, function (data) {
         $.each(data.feed.entry, function (key, val) {
             var name = val.gsx$name.$t;
@@ -23,7 +23,7 @@ $(function () {
             var contact = email + ' ' + (val.gsx$personalwebsitelink.$t ? website : '') + '<br />' + val.gsx$telephone.$t;
             var city = "<span class='city'>" + val.gsx$citytown.$t + ', ' + val.gsx$state.$t + "</span>";
             var region = val.gsx$region.$t;
-            var researchareas = val.gsx$researchareas.$t;
+            var tags = val.gsx$tags.$t;
 
             // var allResearchInfo = val.gsx$gsx:positiontitle.$t + '<br />' + val.gsx$telephone.$t + '<br />' + val.gsx$researchareas.$t;
             
