@@ -2,11 +2,11 @@ MyApp = {};
 MyApp.spreadsheetData = [];
 MyApp.keywords = [];
 MyApp.headerData = [
-    { "sTitle": "Name" }, { "sTitle": "Organization" }, { "sTitle": "Projects" }, { "sTitle": "Contact" }, { "sTitle": "City" }, { "sTitle": "region" }, { "sTitle": "organizations" }, { "sTitle": "researchareas" }
+    { "sTitle": "Name" }, { "sTitle": "Age" }, { "sTitle": "Parents" }, { "sTitle": "Breed" }, { "sTitle": "Activity" }
 ];
 //filterIndexes is a map between names and the index in headerData (likely spreadsheetData too)
-MyApp.filterIndexes = { "organizations": 6, "regions": 5, "researcharea" : 7 };
-MyApp.Organizations = [], MyApp.Regions = [], MyApp.ResearchAreas = [];
+MyApp.filterIndexes = { "breed": 3, "activity": 4};
+MyApp.Breed = [], MyApp.Activity = [];
 
 String.prototype.trunc = function (n) {
     return this.substr(0, n - 1) + (this.length > n ? '&hellip;' : '');
@@ -17,60 +17,34 @@ http://billing.chillidoghosting.com/knowledgebase/48/Publishing-Spreadsheets-to-
 */
 
 $(function () {
-    var url = "https://spreadsheets.google.com/feeds/list/1gTLWPM9CWy_0R_iUmidClCkwyi7CEbHaYftQ-dfeNF8/1/public/values?alt=json-in-script&callback=?";
+    var url = "https://spreadsheets.google.com/feeds/list/1GdRFYqi725g_ySoRRX_v7MTlQnusbCFST5smhZEzczc/1/public/values?alt=json-in-script&callback=?";
+    // var url = "https://spreadsheets.google.com/feeds/list/1gTLWPM9CWy_0R_iUmidClCkwyi7CEbHaYftQ-dfeNF8/1/public/values?alt=json-in-script&callback=?";
     // var url = "https://spreadsheets.google.com/feeds/list/0AhTxmYCYi3fpdGRrelZaT2F0ajBmalJzTlEzQU96dUE/1/public/values?alt=json-in-script&callback=?";
     $.getJSON(url, {}, function (data) {
         $.each(data.feed.entry, function (key, val) {
             var name = val.gsx$name.$t;
-            var dept = val.gsx$departmentprogram.$t + '<br /><span class="discreet">' + val.gsx$organization.$t + '</span>';
-            var orgtype = val.gsx$typeoforganization.$t;
-            var website = "<a target='_blank' href='" + val.gsx$personalwebsitelink.$t + "'><i class='icon-globe'></i></a>";
-            var email = "<a href='mailto:" + val["gsx$email"].$t + "'><i class='icon-envelope'></i></a>";
-            var contact = email + ' ' + (val.gsx$personalwebsitelink.$t ? website : '') + '<br />' + val.gsx$telephone.$t;
-            var city = "<span class='city'>" + val.gsx$citytown.$t + ', ' + val.gsx$state.$t + "</span>";
-            var region = val.gsx$region.$t;
-            var researchareas = val.gsx$researchareas.$t;
+            var age = val.gsx$age.$t;
+            var parents = val.gsx$parents.$t;
+            var breed = val.gsx$breed.$t;
+            var act = val.gsx$favoriteactivity.$t;
 
             // var allResearchInfo = val.gsx$gsx:positiontitle.$t + '<br />' + val.gsx$telephone.$t + '<br />' + val.gsx$researchareas.$t;
 
             MyApp.spreadsheetData.push(
                 [
-                    GenerateResearcherColumn(val),
-                    dept,
-                    GenerateProjectColumn(val),
-                    contact, city,
-                    region, orgtype, researchareas
+                    name, age, parents, breed, act
                 ]);
 
-            if ($.inArray(orgtype, MyApp.Organizations) === -1 && orgtype.length !== 0) {
-                MyApp.Organizations.push(orgtype);
+            if ($.inArray(breed, MyApp.Breed) === -1 && breed.length !== 0) {
+                MyApp.Breed.push(breed);
             }
-            if ($.inArray(region, MyApp.Regions) === -1 && region.length !== 0) {
-                MyApp.Regions.push(region);
+            if ($.inArray(act, MyApp.Activity) === -1 && act.length !== 0) {
+                MyApp.Activity.push(act);
             }
-
-            /*
-            if ($.inArray(keyword, MyApp.keywords) === -1 && keyword.length !== 0) {
-                MyApp.keywords.push(keyword);
-            }
-            */
-
-            /* DOH */
-            //Add the keywords, which are semi-colon separated. First trim them and then replace the CRLF, then split.
-            $.each(researchareas.trim().replace(/^[\r\n]+|\.|[\r\n]+$/g, "").split(';'), function (key, val) {
-                val = val.trim(); //need to trim the semi-colon separated values after split
-
-                if ($.inArray(val, MyApp.ResearchAreas) === -1 && val.length !== 0) {
-                    MyApp.ResearchAreas.push(val);
-                }
-            });
-
-            MyApp.ResearchAreas.sort();
-
         });
 
-        MyApp.Organizations.sort();
-        MyApp.Regions.sort();
+        MyApp.Breed.sort();
+        MyApp.Activity.sort();
         //MyApp.keywords.sort();
 
         createDataTable();
@@ -79,28 +53,28 @@ $(function () {
     });
 })
 
-function hideUnavailableOrganizations(){
-    var fileredData = MyApp.oTable._('tr', {"filter":"applied"});
-
-    //Get departments available after the filters are set
-    MyApp.Organizations = [];
-    $.each(fileredData, function (key, val) {
-        var org = val[MyApp.filterIndexes["organizations"]];
-
-        if ($.inArray(org, MyApp.Organizations) === -1 && org.length !== 0) {
-                MyApp.Organizations.push(org);
-        }
-    });
-
-    // $(":checkbox", "#organizations").each(function () {
-    //     //if a checkbox isn't in the list of available departments, hide it
-    //     if ($.inArray(this.name, MyApp.Organizations) === -1) {
-    //         $(this).parent().css("display", "none");
-    //     } else {
-    //         $(this).parent().css("display", "block");
-    //     }
-    // });
-}
+// function hideUnavailableOrganizations(){
+//     var fileredData = MyApp.oTable._('tr', {"filter":"applied"});
+//
+//     //Get departments available after the filters are set
+//     MyApp.Organizations = [];
+//     $.each(fileredData, function (key, val) {
+//         var org = val[MyApp.filterIndexes["organizations"]];
+//
+//         if ($.inArray(org, MyApp.Organizations) === -1 && org.length !== 0) {
+//                 MyApp.Organizations.push(org);
+//         }
+//     });
+//
+//     // $(":checkbox", "#organizations").each(function () {
+//     //     //if a checkbox isn't in the list of available departments, hide it
+//     //     if ($.inArray(this.name, MyApp.Organizations) === -1) {
+//     //         $(this).parent().css("display", "none");
+//     //     } else {
+//     //         $(this).parent().css("display", "block");
+//     //     }
+//     // });
+// }
 
 
 function configurePopups(){
@@ -113,26 +87,18 @@ function configurePopups(){
 
 
 function addFilters(){
-    var $organizations = $("#organizations");
+    var $breed = $("#breed");
 
-    $.each(MyApp.Organizations, function (key, val) {
-        $organizations.append('<li><label><input type="checkbox" name="' + val + '"> ' + val + '</label></li>');
+    $.each(MyApp.Breed, function (key, val) {
+        $breed.append('<li><label><input type="checkbox" name="' + val + '"> ' + val + '</label></li>');
     });
 
 
-    var $region = $("#regions");
+    var $activity = $("#activity");
 
-    $.each(MyApp.Regions, function (key, val) {
-        $region.append('<li><label><input type="checkbox" name="' + val + '"> ' + val + '</label></li>');
+    $.each(MyApp.Activity, function (key, val) {
+        $activity.append('<li><label><input type="checkbox" name="' + val + '"> ' + val + '</label></li>');
     });
-
-
-    var $researcharea = $("#researcharea");
-
-    $.each(MyApp.ResearchAreas, function (key, val) {
-        $researcharea.append('<li><label><input type="checkbox" name="' + val + '"> ' + val + '</label></li>');
-    });
-
 
     $(".filterrow").on("click", "ul.filterlist", function (e) {
         var filterRegex = "";
@@ -151,7 +117,7 @@ function addFilters(){
         });
 
         MyApp.oTable.fnFilter(filterRegex, filterIndex, true, false);
-        hideUnavailableOrganizations();
+        // hideUnavailableOrganizations();
         displayCurrentFilters();
     });
 
@@ -253,7 +219,7 @@ function createDataTable() {
     MyApp.oTable = $("#spreadsheet").dataTable({
         "aoColumnDefs": [
             //{ "sType": "link-content", "aTargets": [ 0 ] },
-            { "bVisible": false, "aTargets": [ -2, -3, -1 ] } //hide the keywords column for now (the last column, hence -1)
+            //{ "bVisible": false, "aTargets": [ -2, -3, -1 ] } //hide the keywords column for now (the last column, hence -1)
         ],
         "iDisplayLength": 20,
         "bLengthChange": false,
