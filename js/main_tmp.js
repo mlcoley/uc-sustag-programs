@@ -2,11 +2,11 @@ MyApp = {};
 MyApp.spreadsheetData = [];
 MyApp.keywords = [];
 MyApp.headerData = [
-    { "sTitle": "Name" }, { "sTitle": "Age" }, { "sTitle": "Parents" }, { "sTitle": "Breed" }, { "sTitle": "Activity" }
+    { "sTitle": "Program" }, { "sTitle": "Description" }, { "sTitle": "Website" }, { "sTitle": "Contacts" }, { "sTitle": "Email" }, {"sTitle": "Tags"}
 ];
 //filterIndexes is a map between names and the index in headerData (likely spreadsheetData too)
-MyApp.filterIndexes = { "breed": 3, "activity": 4};
-MyApp.Breed = [], MyApp.Activity = [];
+MyApp.filterIndexes = { "tag": 5};
+MyApp.Tags = [];
 
 String.prototype.trunc = function (n) {
     return this.substr(0, n - 1) + (this.length > n ? '&hellip;' : '');
@@ -17,35 +17,32 @@ http://billing.chillidoghosting.com/knowledgebase/48/Publishing-Spreadsheets-to-
 */
 
 $(function () {
-    var url = "https://spreadsheets.google.com/feeds/list/1GdRFYqi725g_ySoRRX_v7MTlQnusbCFST5smhZEzczc/1/public/values?alt=json-in-script&callback=?";
-    // var url = "https://spreadsheets.google.com/feeds/list/1gTLWPM9CWy_0R_iUmidClCkwyi7CEbHaYftQ-dfeNF8/1/public/values?alt=json-in-script&callback=?";
-    // var url = "https://spreadsheets.google.com/feeds/list/0AhTxmYCYi3fpdGRrelZaT2F0ajBmalJzTlEzQU96dUE/1/public/values?alt=json-in-script&callback=?";
+    // var url = "https://spreadsheets.google.com/feeds/list/1GdRFYqi725g_ySoRRX_v7MTlQnusbCFST5smhZEzczc/1/public/values?alt=json-in-script&callback=?";
+    var url = "https://spreadsheets.google.com/feeds/list/1Yrq7iNjFIUGv9N1DLATs_WlP-i9VUQYqb23lnUaQMJA/1/public/values?alt=json-in-script&callback=?";
     $.getJSON(url, {}, function (data) {
         $.each(data.feed.entry, function (key, val) {
-            var name = val.gsx$name.$t;
-            var age = val.gsx$age.$t;
-            var parents = val.gsx$parents.$t;
-            var breed = val.gsx$breed.$t;
-            var act = val.gsx$favoriteactivity.$t;
-
-            // var allResearchInfo = val.gsx$gsx:positiontitle.$t + '<br />' + val.gsx$telephone.$t + '<br />' + val.gsx$researchareas.$t;
+            var prog = val.gsx$programs.$t;
+            var desc = val.gsx$description.$t;
+            var website = "<a target='_blank' href='" + val.gsx$website.$t + "'><i class='icon-globe'></i> Website</a>";
+            var contacts = val.gsx$contacts.$t;
+            var email = "<a href='mailto:" + val["gsx$email"].$t + "'><i class='icon-envelope'></i> Email</a>";
+            var tags = val.gsx$tags.$t;
 
             MyApp.spreadsheetData.push(
                 [
-                    name, age, parents, breed, act
+                    prog, GenerateDescription(val), website, contacts, email, tags
                 ]);
 
-            if ($.inArray(breed, MyApp.Breed) === -1 && breed.length !== 0) {
-                MyApp.Breed.push(breed);
-            }
-            if ($.inArray(act, MyApp.Activity) === -1 && act.length !== 0) {
-                MyApp.Activity.push(act);
-            }
+            $.each(tags.trim().replace(/^[\r\n]+|\.|[\r\n]+$/g, "").split(';'), function (key, val) {
+                val = val.trim(); //need to trim the semi-colon separated values after split
+
+                if ($.inArray(val, MyApp.Tags) === -1 && val.length !== 0) {
+                    MyApp.Tags.push(val);
+                }
+            });
         });
 
-        MyApp.Breed.sort();
-        MyApp.Activity.sort();
-        //MyApp.keywords.sort();
+        MyApp.Tags.sort();
 
         createDataTable();
         addFilters();
@@ -87,17 +84,10 @@ function configurePopups(){
 
 
 function addFilters(){
-    var $breed = $("#breed");
+    var $tags = $("#tags");
 
-    $.each(MyApp.Breed, function (key, val) {
-        $breed.append('<li><label><input type="checkbox" name="' + val + '"> ' + val + '</label></li>');
-    });
-
-
-    var $activity = $("#activity");
-
-    $.each(MyApp.Activity, function (key, val) {
-        $activity.append('<li><label><input type="checkbox" name="' + val + '"> ' + val + '</label></li>');
+    $.each(MyApp.Tags, function (key, val) {
+        $tags.append('<li><label><input type="checkbox" name="' + val + '"> ' + val + '</label></li>');
     });
 
     $(".filterrow").on("click", "ul.filterlist", function (e) {
@@ -147,26 +137,24 @@ function GenerateResearcherColumn(val /* entry value from spreadsheet */){
     return researcher;
 }
 
-function GenerateProjectColumn(val /* entry value from spreadsheet */){
-    var project1title = "<span style='font-size: 0.8em;'>" + val.gsx$project1title.$t.trunc(20) + "</span>";
-    var project1details = "Status: " + val.gsx$expectedcompletiondate.$t + (val.gsx$linktoprojectwebsite.$t ? "—" + val.gsx$linktoprojectwebsite.$t : '');
-    var project1 = "<a href='#' class='project-popover' data-toggle='popover' data-content='" + project1details + "' data-original-title='" + val.gsx$project1title.$t + "'>" + project1title + "</a>";
+function GenerateDescription(val /* entry value from spreadsheet */){
+    var desc_short = "<span style='font-size: 0.8em;'>" + val.gsx$description.$t.trunc(80) + "</span>";
+    var tmp = "Title";
+    /*replace single-quotes with html code*/
+    var desc = val.gsx$description.$t.replace(/'/g, "&#39;");
+    var desc_full = "<a href='#' class='project-popover' data-toggle='popover' data-content='" + desc + "' data-original-title='" + tmp + "'>" + desc_short + "</a>";
 
-    var project2title = "<span style='font-size: 0.8em;'>" + val.gsx$project2title.$t.trunc(20) + "</span>";
-    var project2details = "Status: " + val.gsx$expectedcompletiondate_2.$t + (val.gsx$linktoprojectwebsite_2.$t ? "—" + val.gsx$linktoprojectwebsite_2.$t : '');
-    var project2 = "<a href='#' class='project-popover' data-toggle='popover' data-content='" + project2details + "' data-original-title='" + val.gsx$project2title.$t + "'>" + project2title + "</a>";
+    // var project2title = "<span style='font-size: 0.8em;'>" + val.gsx$project2title.$t.trunc(20) + "</span>";
+    // var project2details = "Status: " + val.gsx$expectedcompletiondate_2.$t + (val.gsx$linktoprojectwebsite_2.$t ? "—" + val.gsx$linktoprojectwebsite_2.$t : '');
+    // var project2 = "<a href='#' class='project-popover' data-toggle='popover' data-content='" + project2details + "' data-original-title='" + val.gsx$project2title.$t + "'>" + project2title + "</a>";
+    //
+    // var project3title = "<span style='font-size: 0.8em;'>" + val.gsx$project3title.$t.trunc(20) + "</span>";
+    // var project3details = "Status: " + val.gsx$expectedcompletiondate_3.$t + (val.gsx$linktoprojectwebsite_3.$t ? "—" + val.gsx$linktoprojectwebsite_3.$t : '');
+    // var project3 = "<a href='#' class='project-popover' data-toggle='popover' data-content='" + project3details + "' data-original-title='" + val.gsx$project3title.$t + "'>" + project3title + "</a>";
 
-    var project3title = "<span style='font-size: 0.8em;'>" + val.gsx$project3title.$t.trunc(20) + "</span>";
-    var project3details = "Status: " + val.gsx$expectedcompletiondate_3.$t + (val.gsx$linktoprojectwebsite_3.$t ? "—" + val.gsx$linktoprojectwebsite_3.$t : '');
-    var project3 = "<a href='#' class='project-popover' data-toggle='popover' data-content='" + project3details + "' data-original-title='" + val.gsx$project3title.$t + "'>" + project3title + "</a>";
+    // var projects = project1 + (val.gsx$project2title.$t ? project2 : '') + (val.gsx$project3title.$t ? project3 : '');
 
-    var projects = project1 + (val.gsx$project2title.$t ? project2 : '') + (val.gsx$project3title.$t ? project3 : '');
-
-    var allResearchInfo = val.gsx$researchareas.$t;
-
-    // var researcher = "<a href='#' class='researcher-popover' data-toggle='popover' data-content='" + allResearchInfo + "' data-original-title='" + name + "'>" + name + "</a><br /><span class='discreet'>" + title + "</span>";
-
-    return projects;
+    return desc_full;
 }
 
 
@@ -219,7 +207,7 @@ function createDataTable() {
     MyApp.oTable = $("#spreadsheet").dataTable({
         "aoColumnDefs": [
             //{ "sType": "link-content", "aTargets": [ 0 ] },
-            //{ "bVisible": false, "aTargets": [ -2, -3, -1 ] } //hide the keywords column for now (the last column, hence -1)
+            { "bVisible": false, "aTargets": [ -1 ] } //hide the tags column (the last one)
         ],
         "iDisplayLength": 20,
         "bLengthChange": false,

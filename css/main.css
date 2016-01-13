@@ -12,7 +12,9 @@
 	font-weight: bold;
 }
 
-
+.popover {
+	width: 40em;
+}
 a.project-popover {
 	vertical-align: top;
 }
@@ -25,12 +27,3 @@ a.project-popover span {
 .hero-unit p {display: inline-block;}
 
 .city {font-size: 0.9em;}
-
-
-
-
-
-
-
-
-
