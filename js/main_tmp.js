@@ -2,123 +2,144 @@ MyApp = {};
 MyApp.spreadsheetData = [];
 MyApp.keywords = [];
 MyApp.headerData = [
-    { "sTitle": "Program" },
-    { "sTitle": "Description" },
-    { "sTitle": "Website" },
-    { "sTitle": "Contacts" },
+    {"sTitle": "Program"},
+    {"sTitle": "Description"},
     {"sTitle": "Tags"},
     {"sTitle": "Campus"},
-    {"sTitle": "Activities"}
+    {"sTitle": "Activities"},
+    {"sTitle": "Topic Areas"},
+    {"sTitle": "Contacts"}
 ];
-//filterIndexes is a map between names and the index in headerData (spreadsheetData too)
-MyApp.filterIndexes = { "tag": 4, "campus": 5, "activities": 6};
-MyApp.Tags = [], MyApp.Campus = [], MyApp.Activities = [];
 
+hiddenColumns = [
+    "Tags",
+    "Topic Areas"
+];
+
+filterColumns = [
+    "Campus",
+    "Activities",
+    "Topic Areas"
+];
+
+MyApp.hide = hiddenColumns.map(getIndex);
+
+MyApp.filterIndexes = {};
+for (var k in filterColumns){
+    var key = toFieldname(filterColumns[k]);
+    MyApp.filterIndexes[key] = getIndex(filterColumns[k]);
+    MyApp[key] = [];
+}
+
+/* ------------------------------------------------------------------------- */
 String.prototype.trunc = function (n) {
     return this.substr(0, n - 1) + (this.length > n ? "&hellip;" : "");
 };
-
+/* ------------------------------------------------------------------------- */
 /* instructions for making a spreadsheet accessible
 http://billing.chillidoghosting.com/knowledgebase/48/Publishing-Spreadsheets-to-Google-Docs.html
 */
-
+/* ------------------------------------------------------------------------- */
 $(function () {
     var url = "https://spreadsheets.google.com/feeds/list/1Yrq7iNjFIUGv9N1DLATs_WlP-i9VUQYqb23lnUaQMJA/1/public/values?alt=json-in-script&callback=?";
     $.getJSON(url, {}, function (data) {
         $.each(data.feed.entry, function (key, val) {
-            var prog = val.gsx$programs.$t;
-            // var desc = val.gsx$description.$t;
-            var website = "<a target='_blank' href='" + val.gsx$website.$t + "'><i class='icon-globe'></i> Website</a>";
-            // var contacts = val.gsx$contacts.$t;
-            // var email = "<a href='mailto:" + val.gsx$email.$t + "'><i class='icon-envelope'></i> Email</a>";
-            var tags = val.gsx$tags.$t;
-            var campus = val.gsx$campus.$t;
-            var activities = val.gsx$activities.$t;
+
+            var tags = parseList(val.gsx$tags.$t, ";", "Tags");
+            var campus = parseList(val.gsx$campus.$t, ";", "Campus");
+            var activities = parseList(val.gsx$activities.$t, ";", "Activities");
+            var topics = parseList(val.gsx$topicareas.$t, ";", "Topic Areas");
 
             MyApp.spreadsheetData.push([
-                    prog,
+                    val.gsx$programs.$t,
                     GenerateDescription(val),
-                    website,
-                    GenerateContact(val),
                     tags,
                     campus,
-                    activities
+                    activities,
+                    topics,
+                    GenerateContact(val)
                   ]);
-
-            parseList(tags, ";", "Tags");
-            parseList(campus, ";", "Campus");
-            parseList(activities, ";", "Activities");
         });
 
-        MyApp.Tags.sort();
-        MyApp.Campus.sort();
-        MyApp.Activities.sort();
+        for (var k in MyApp.filterIndexes) {
+            MyApp[k].sort();
+        }
 
         createDataTable();
+        generateFilterBox();
         addFilters();
         configurePopups();
     });
 })
-
+/* ------------------------------------------------------------------------- */
+function generateFilterBox() {
+    var template = '<div class="accordion-group">' +
+    '   <div class="accordion-heading">' +
+    '     <a class="accordion-toggle" data-toggle="collapse" href="#collapse$FIELD$">' +
+    '       $NAME$ <i class="icon-chevron-down pull-right"></i>' +
+    '     </a>' +
+    '   </div>' +
+    '   <div id="collapse$FIELD$" class="accordion-body collapse">' +
+    '       <div class="accordion-inner">' +
+    '           <ul id="$FIELD$" class="unstyled filterlist"></ul>' +
+    '       </div>' +
+    '   </div>' +
+    '</div>';
+    for (var k in filterColumns) {
+        var field = filterColumns[k];
+        var str = template.replace(/\$FIELD\$/g, toFieldname(field));
+        str = str.replace(/\$NAME\$/g, field);
+        document.getElementById("filterAccordion").innerHTML += str;
+    }
+}
+/* ------------------------------------------------------------------------- */
+function getIndex(x) {
+    var out = null;
+    for (var k in MyApp.headerData) {
+        if (MyApp.headerData[k].sTitle.toLowerCase() == x.toLowerCase()) {
+            out = k;
+            break;
+        }
+    }
+    return Number(out);
+}
+/* ------------------------------------------------------------------------- */
+function toFieldname(str) {
+    return str.replace(" ", "_").toLowerCase();
+}
+/* ------------------------------------------------------------------------- */
 function parseList(str, sep, field) {
+    field = toFieldname(field);
+    var out = "";
     $.each(str.trim().replace(/^[\r\n]+|\.|[\r\n]+$/g, "").split(sep), function (key, val) {
         val = val.trim(); //need to trim the semi-colon separated values after split
-
-        if ($.inArray(val, MyApp[field]) === -1 && val.length !== 0) {
-            MyApp[field].push(val);
+        if (MyApp.hasOwnProperty(field)) {
+            if ($.inArray(val, MyApp[field]) === -1 && val.length !== 0) {
+                MyApp[field].push(val);
+            }
+        }
+        if (val) {
+            out += val + "<br />";
         }
     });
+    return out.replace(/(=?\<br \/\>)*$/g, "").trim(); //remove tailing line break(s)
 }
-
-// function hideUnavailableOrganizations(){
-//     var fileredData = MyApp.oTable._('tr', {"filter":"applied"});
-//
-//     //Get departments available after the filters are set
-//     MyApp.Organizations = [];
-//     $.each(fileredData, function (key, val) {
-//         var org = val[MyApp.filterIndexes["organizations"]];
-//
-//         if ($.inArray(org, MyApp.Organizations) === -1 && org.length !== 0) {
-//                 MyApp.Organizations.push(org);
-//         }
-//     });
-//
-//     // $(":checkbox", "#organizations").each(function () {
-//     //     //if a checkbox isn't in the list of available departments, hide it
-//     //     if ($.inArray(this.name, MyApp.Organizations) === -1) {
-//     //         $(this).parent().css("display", "none");
-//     //     } else {
-//     //         $(this).parent().css("display", "block");
-//     //     }
-//     // });
-// }
-
-
+/* ------------------------------------------------------------------------- */
 function configurePopups(){
     $("#spreadsheet").popover({
         selector: '.researcher-popover, .project-popover',
         trigger: 'hover'
     });
 }
-
+/* ------------------------------------------------------------------------- */
 function addFilters(){
-    var $tags = $("#tags");
 
-    $.each(MyApp.Tags, function (key, val) {
-        $tags.append('<li><label><input type="checkbox" name="' + val + '"> ' + val + '</label></li>');
-    });
-
-    var $campus = $("#campus");
-
-    $.each(MyApp.Campus, function (key, val) {
-        $campus.append('<li><label><input type="checkbox" name="' + val + '"> ' + val + '</label></li>');
-    });
-
-    var $activities = $("#activities");
-
-    $.each(MyApp.Activities, function (key, val) {
-        $activities.append('<li><label><input type="checkbox" name="' + val + '"> ' + val + '</label></li>');
-    });
+    for (var k in MyApp.filterIndexes) {
+        var $value = $("#" + k);
+        $.each(MyApp[k], function (key, val) {
+            $value.append('<li><label><input type="checkbox" name="' + val + '"> ' + val + '</label></li>');
+        });
+    }
 
     $(".filterrow").on("click", "ul.filterlist", function (e) {
         var filterRegex = "";
@@ -151,30 +172,14 @@ function addFilters(){
         $("ul.filterlist").click();
     });
 }
-
-function GenerateResearcherColumn(val /* entry value from spreadsheet */){
-    var name = val.gsx$name.$t;
-    var title = val.gsx$positiontitle.$t;
-
-    //var website = "<a target='_blank' href='" + val.gsx$website.$t + "'>" + val.gsx$website.$t + "</a>";
-    //var email = "<a href='mailto:" + val["gsx$e-mail"].$t + "'>" + val["gsx$e-mail"].$t + "</a>";
-    // var allResearchInfo = "Research areas: " + val.gsx$researchareas.$t;
-    var allResearchInfo = val.gsx$researchareas.$t;
-
-    var content = allResearchInfo; //could expand content later
-    var researcher = "<a href='#' class='researcher-popover' data-toggle='popover' data-content='" + allResearchInfo + "' data-original-title='" + name + "'>" + name + "</a><br /><span class='discreet'>" + title + "</span>";
-
-    return researcher;
-}
-
+/* ------------------------------------------------------------------------- */
 function GenerateContact(val) {
     var contacts = val.gsx$contacts.$t.trim().split(";");
-    console.log(contacts.length);
     var str = "#name#<br /><span class='discreet'>#title#</span>";
     var info = "";
     var re = /([^\[]*)/g;
     var re2 = /\[([^\]]*)\]/g;
-    for (k = 0; k < contacts.length; k++){
+    for (var k in contacts){
         if (contacts[k]) {
             var name = re.exec(contacts[k]);
             if (name) {
@@ -184,16 +189,15 @@ function GenerateContact(val) {
             var title = re2.exec(contacts[k]);
             if (title) {
                 info += "<br /><span class='discreet'>" + title[1] + "</span>";
-            } else {
-                console.log("no title " + contacts[k])
             }
             info += "<br />";
         }
     }
+    info += "<a target='_blank' href='" + val.gsx$website.$t + "'><i class='icon-globe'></i> </a>";
     info += "<a href='mailto:" + val.gsx$email.$t + "'><i class='icon-envelope'></i></a>";
     return info;
 }
-
+/* ------------------------------------------------------------------------- */
 function GenerateDescription(val /* entry value from spreadsheet */){
     var desc_short = "<span style='font-size: 0.8em;'>" + val.gsx$description.$t.trunc(80) + "</span>";
     var tmp = val.gsx$programs.$t;
@@ -205,20 +209,11 @@ function GenerateDescription(val /* entry value from spreadsheet */){
 
     return desc_full;
 }
-
-
-
+/* ------------------------------------------------------------------------- */
 function displayCurrentFilters() {
     var $filterAlert = $("#filters");
-    //var regionFilter = $("#regions"); // Wrong selector..?
 
     var filters = "";
-
-    /*
-    if (regionFilter){
-        filters += "<strong>" + this.name + "</strong>";
-    }
-    */
 
     $("input:checked", "#filterAccordian").each(function () {
         if (filters.length !== 0) {
@@ -236,7 +231,7 @@ function displayCurrentFilters() {
         $filterAlert.html(null);
     }
 }
-
+/* ------------------------------------------------------------------------- */
 function createDataTable() {
     //Create a sorter that uses case-insensitive html content
     jQuery.extend(jQuery.fn.dataTableExt.oSort, {
@@ -256,7 +251,7 @@ function createDataTable() {
     MyApp.oTable = $("#spreadsheet").dataTable({
         "aoColumnDefs": [
             //{ "sType": "link-content", "aTargets": [ 0 ] },
-            { "bVisible": false, "aTargets": [ MyApp.filterIndexes["tag"] ] } //hide the tags column
+            { "bVisible": false, "aTargets": MyApp.hide } //hide the tags column
         ],
         "iDisplayLength": 20,
         "bLengthChange": false,
@@ -264,3 +259,4 @@ function createDataTable() {
         "aoColumns": MyApp.headerData
     });
 }
+/* ------------------------------------------------------------------------- */
