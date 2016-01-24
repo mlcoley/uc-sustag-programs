@@ -13,11 +13,16 @@
 }
 
 .popover {
-	width: 60%;
+	top: auto;
+	width: 80%;
+	height: auto;
 }
-a.project-popover {
+.arrow {
+	visibility: hidden;
+}
+/*a.project-popover {
 	vertical-align: top;
-}
+}*/
 a.project-popover span {
 	line-height: 1em;
 	padding: 0.5em 0;
