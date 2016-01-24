@@ -1,0 +1,73 @@
+
+
+/* ==========================================================================
+   this code is modified from bootstrap.css to add the custum uc-sustag icons
+   ========================================================================== */
+
+[class^="ucicon-"],
+[class*=" ucicon-"] {
+ display: inline-block;
+ width: 29px;
+ height: 29px;
+ margin-top: 1px;
+ *margin-right: .3em;
+ line-height: 29px;
+ vertical-align: text-top;
+ background-image: url("../img/uc-sustag_icons.png");
+ background-position: 29px 29px;
+ background-repeat: no-repeat;
+}
+
+/* not sure this is needed, but is appears in bootstrap so... */
+
+.icon-white,
+.nav-pills > .active > a > [class^="ucicon-"],
+.nav-pills > .active > a > [class*=" ucicon-"],
+.nav-list > .active > a > [class^="ucicon-"],
+.nav-list > .active > a > [class*=" ucicon-"],
+.navbar-inverse .nav > .active > a > [class^="ucicon-"],
+.navbar-inverse .nav > .active > a > [class*=" ucicon-"],
+.dropdown-menu > li > a:hover > [class^="ucicon-"],
+.dropdown-menu > li > a:hover > [class*=" ucicon-"],
+.dropdown-menu > .active > a > [class^="ucicon-"],
+.dropdown-menu > .active > a > [class*=" ucicon-"],
+.dropdown-submenu:hover > a > [class^="ucicon-"],
+.dropdown-submenu:hover > a > [class*=" ucicon-"] {
+  background-image: url("../img/uc-sustag_icons.png");
+}
+
+.ucicon-food_production {
+  background-position: 0 0;
+}
+
+.ucicon-energy_and_climate {
+  background-position: -50px 0;
+}
+
+.ucicon-human_health {
+  background-position: -100px 0;
+}
+
+.ucicon-water_management {
+  background-position: 0 -50px;
+}
+
+.ucicon-economy_and_policy {
+  background-position: -50px -50px;
+}
+
+.ucicon-food_system_postproduction {
+  background-position: -100px -50px;
+}
+
+.ucicon-land_air_and_ecosystems {
+  background-position: 0 -100px;
+}
+
+.ucicon-social_equity {
+  background-position: -50px -100px;
+}
+
+.ucicon-education {
+  background-position: -100px -100px;
+}

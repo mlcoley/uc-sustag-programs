@@ -7,8 +7,9 @@ MyApp.headerData = [
     {"sTitle": "Tags"},
     {"sTitle": "Campus"},
     {"sTitle": "Activities"},
+    {"sTitle": "Topic Areas (icon)"},
+    {"sTitle": "Contacts"},
     {"sTitle": "Topic Areas"},
-    {"sTitle": "Contacts"}
 ];
 
 hiddenColumns = [
@@ -22,6 +23,14 @@ filterColumns = [
     "Topic Areas"
 ];
 
+iconColumns = [
+    "Topic Areas"
+];
+
+for (var k in iconColumns) {
+    iconColumns[k] = toFieldname(iconColumns[k]);
+}
+
 MyApp.hide = hiddenColumns.map(getIndex);
 
 MyApp.filterIndexes = {};
@@ -30,10 +39,17 @@ for (var k in filterColumns){
     MyApp.filterIndexes[key] = getIndex(filterColumns[k]);
     MyApp[key] = [];
 }
-
 /* ------------------------------------------------------------------------- */
 String.prototype.trunc = function (n) {
     return this.substr(0, n - 1) + (this.length > n ? "&hellip;" : "");
+};
+/* -------------------------------------------------------------------------
+RegExp.escape()
+source: Mathias Bynens on stackoverflow.com
+http://stackoverflow.com/questions/3115150/how-to-escape-regular-expression-special-characters-using-javascript
+---------------------------------------------------------------------------- */
+RegExp.escape = function(str) {
+    return str.replace(/[-[\]{}()*+?.,\\/^$|#]/g, "\\$&");
 };
 /* ------------------------------------------------------------------------- */
 /* instructions for making a spreadsheet accessible
@@ -50,14 +66,19 @@ $(function () {
             var activities = parseList(val.gsx$activities.$t, ";", "Activities");
             var topics = parseList(val.gsx$topicareas.$t, ";", "Topic Areas");
 
+            var iconstr = "";
+            for (var k = 0; k < topics.list.length; k++) {
+                iconstr += generateIcon(topics.list[k]);
+            }
             MyApp.spreadsheetData.push([
                     val.gsx$programs.$t,
                     GenerateDescription(val),
-                    tags,
-                    campus,
-                    activities,
-                    topics,
-                    GenerateContact(val)
+                    tags.str,
+                    campus.str,
+                    activities.str,
+                    iconstr,
+                    GenerateContact(val),
+                    topics.str
                   ]);
         });
 
@@ -71,6 +92,10 @@ $(function () {
         configurePopups();
     });
 })
+/* ------------------------------------------------------------------------- */
+function generateIcon(str) {
+    return "<i class='ucicon-" + toFieldname(str) + "'></i>"
+}
 /* ------------------------------------------------------------------------- */
 function generateFilterBox() {
     var template = '<div class="accordion-group">' +
@@ -105,12 +130,14 @@ function getIndex(x) {
 }
 /* ------------------------------------------------------------------------- */
 function toFieldname(str) {
-    return str.replace(" ", "_").toLowerCase();
+    str = str.replace(/\s/g, "_").replace(/\W/g, "")
+    return str.toLowerCase();
 }
 /* ------------------------------------------------------------------------- */
 function parseList(str, sep, field) {
     field = toFieldname(field);
     var out = "";
+    var items = [];
     $.each(str.trim().replace(/^[\r\n]+|\.|[\r\n]+$/g, "").split(sep), function (key, val) {
         val = val.trim(); //need to trim the semi-colon separated values after split
         if (MyApp.hasOwnProperty(field)) {
@@ -120,9 +147,12 @@ function parseList(str, sep, field) {
         }
         if (val) {
             out += val + "<br />";
+            items.push(val);
         }
     });
-    return out.replace(/(=?\<br \/\>)*$/g, "").trim(); //remove tailing line break(s)
+    return {str: out.replace(/(=?\<br \/\>)*$/g, "").trim(),
+            list: items
+    }; //remove tailing line break(s)
 }
 /* ------------------------------------------------------------------------- */
 function configurePopups(){
@@ -137,7 +167,11 @@ function addFilters(){
     for (var k in MyApp.filterIndexes) {
         var $value = $("#" + k);
         $.each(MyApp[k], function (key, val) {
-            $value.append('<li><label><input type="checkbox" name="' + val + '"> ' + val + '</label></li>');
+            var tmp = val;
+            if ($.inArray(k, iconColumns) > -1) {
+                tmp = generateIcon(val) + " " + val;
+            }
+            $value.append('<li><label><input type="checkbox" name="' + val + '"> ' + tmp + '</label></li>');
         });
     }
 
@@ -145,7 +179,6 @@ function addFilters(){
         var filterRegex = "";
         var filterName = this.id;
         var filterIndex = MyApp.filterIndexes[filterName];
-
         var filters = [];
         $("input", this).each(function (key, val) {
             if (val.checked) {
@@ -153,7 +186,7 @@ function addFilters(){
                     filterRegex += "|";
                 }
 
-                filterRegex += val.name; //Use the hat and dollar to require an exact match
+                filterRegex += RegExp.escape(val.name); //Use the hat and dollar to require an exact match
             }
         });
 

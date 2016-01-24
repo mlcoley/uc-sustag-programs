@@ -27,3 +27,8 @@ a.project-popover span {
 .hero-unit p {display: inline-block;}
 
 .city {font-size: 0.9em;}
+
+/*TODO need to get the filter item text to align with the checkbox */
+li {
+	vertical-align: text-bottom;
+}
