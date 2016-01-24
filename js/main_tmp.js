@@ -235,10 +235,14 @@ function GenerateDescription(val /* entry value from spreadsheet */){
     var desc_short = "<span style='font-size: 0.8em;'>" + val.gsx$description.$t.trunc(80) + "</span>";
     var tmp = val.gsx$programs.$t;
 
-    /*replace single-quotes with html code*/
-    var desc = val.gsx$description.$t.replace(/'/g, "&#39;");
+    /*replace single-quotes with html code, replace newline with <br>*/
+    var desc = val.gsx$description.$t.replace(/'/g, "&#39;").replace(/\n+/g, "<br>");
 
-    var desc_full = "<a href='#' class='project-popover' data-toggle='popover' data-content='" + desc + "' data-original-title='" + tmp + "'>" + desc_short + "</a>";
+    var desc_full = "<a href='#' class='project-popover' data-toggle='popover' data-content='" +
+        desc + "' data-html='true' data-original-title='" +
+        tmp + "' data-placement='right' data-viewport='#body'>" +
+        desc_short +
+        "</a>";
 
     return desc_full;
 }

@@ -13,20 +13,22 @@
 }
 
 .popover {
-	width: 20em;
+	width: 40%;
 }
 a.project-popover {
 	vertical-align: top;
 }
 a.project-popover span {
-	line-height: 1em; padding: 0.5em 0; display: block;
+	line-height: 1em;
+	padding: 0.5em 0;
+	display: block;
 }
 
 .hero-unit {padding: 0px; padding-top: 20px; background: transparent;}
 .hero-unit h1 {display: inline-block; padding-right: 0.25em;}
 .hero-unit p {display: inline-block;}
 
-.city {font-size: 0.9em;}
+/*.city {font-size: 0.9em;}*/
 
 /*TODO need to get the filter item text to align with the checkbox */
 li {
