@@ -159,8 +159,6 @@ var getPlacementFunction = function (defaultPosition, width, height) {
         var boundRight = boundLeft + $(window).width();
         var boundBottom = boundTop + $(window).height();
 
-        // console.log([boundTop, boundLeft, boundRight, boundBottom]);
-
         var pos = $.extend({}, $element.offset(), {
             width: element.offsetWidth,
             height: element.offsetHeight
