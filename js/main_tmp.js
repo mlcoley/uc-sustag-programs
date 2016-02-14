@@ -136,8 +136,6 @@ http://stackoverflow.com/questions/10238089/how-can-you-ensure-twitter-bootstrap
 function configurePopups(){
     $('[data-toggle="popover"]').each(function() {
         var trigger = $(this);
-        var tmp = trigger.attr("data-original-title");
-        console.log(tmp);
         trigger.popover({
             animation: true,
             delay: { show: 0, hide: 0 },
