@@ -136,6 +136,8 @@ http://stackoverflow.com/questions/10238089/how-can-you-ensure-twitter-bootstrap
 function configurePopups(){
     $('[data-toggle="popover"]').each(function() {
         var trigger = $(this);
+        var tmp = trigger.attr("data-original-title");
+        console.log(tmp);
         trigger.popover({
             animation: true,
             delay: { show: 0, hide: 0 },
@@ -159,7 +161,7 @@ var getPlacementFunction = function (defaultPosition, width, height) {
         var boundRight = boundLeft + $(window).width();
         var boundBottom = boundTop + $(window).height();
 
-        console.log([boundTop, boundLeft, boundRight, boundBottom]);
+        // console.log([boundTop, boundLeft, boundRight, boundBottom]);
 
         var pos = $.extend({}, $element.offset(), {
             width: element.offsetWidth,
@@ -383,5 +385,16 @@ function createDataTable() {
         "aaData": MyApp.spreadsheetData,
         "aoColumns": MyApp.headerData
     });
+
+    // ensure that popups are configured each time a page is drawn
+    $("#spreadsheet").on( 'draw.dt', function () {
+        /*NOTE:
+            This may have odd behavior (i.e. triggerd by events other than)
+            'page'; however, on('page.dt'...) is called *before* the page is
+            rendered, thus in that case we configure popups for the page that
+            we are leaving. So for now this appears to work
+        */
+        configurePopups();
+    } );
 }
 /* ------------------------------------------------------------------------- */
